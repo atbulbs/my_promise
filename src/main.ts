@@ -2,9 +2,14 @@ declare type PromiseExecutor = (resolve: Function, reject: Function) => {}
 
 export default class MyPromise {
 
-  executor: PromiseExecutor
+  private executor: PromiseExecutor
+  private PENDING: string = 'PENDING'
+  private FULFILLED: string = 'FULFILLED'
+  private REJECTED: string = 'REJECTED'
+  private state: string
 
   constructor (executor: PromiseExecutor) {
+    this.state = this.PENDING
     this.executor = executor
     try {
       this.executor(this.resolve, this.reject)
@@ -13,8 +18,16 @@ export default class MyPromise {
     }
   }
 
-  resolve (value: any) {}
+  resolve (value: any) {
+    if (this.state === this.PENDING) {
+      this.state = this.FULFILLED
+    }
+  }
 
-  reject (reason: any) {}
+  reject (reason: any) {
+    if (this.state === this.PENDING) {
+      this.state = this.REJECTED
+    }
+  }
 
 }
