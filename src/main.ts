@@ -3,9 +3,9 @@ declare type PromiseExecutor = (resolve: Function, reject: Function) => {}
 export default class MyPromise {
 
   private executor: PromiseExecutor
-  private PENDING: string = 'PENDING'
-  private FULFILLED: string = 'FULFILLED'
-  private REJECTED: string = 'REJECTED'
+  private readonly PENDING: string = 'PENDING'
+  private readonly FULFILLED: string = 'FULFILLED'
+  private readonly REJECTED: string = 'REJECTED'
   private state: string
   private value: any
   private reason: any
