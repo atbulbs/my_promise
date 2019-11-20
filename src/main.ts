@@ -9,6 +9,8 @@ export default class MyPromise {
   private state: string
   private value: any
   private reason: any
+  private onFulfilledCallbacks: Array<{():any}> = []
+  private onRejectedCallbacks: Array<{():any}> = []
 
   constructor (executor: PromiseExecutor) {
     this.state = this.PENDING
@@ -24,6 +26,7 @@ export default class MyPromise {
     if (this.state === this.PENDING) {
       this.state = this.FULFILLED
       this.value = value
+      this.onFulfilledCallbacks.forEach(onFulfilledCallback => onFulfilledCallback())
     }
   }
 
@@ -31,11 +34,20 @@ export default class MyPromise {
     if (this.state === this.PENDING) {
       this.state = this.REJECTED
       this.reason = reason
+      this.onRejectedCallbacks.forEach(onRejectedCallback => onRejectedCallback())
     }
   }
 
   then (onFulfilled: Function, onRejected: Function) {
-    if (this.state === this.FULFILLED) {
+
+    if (this.state === this.PENDING) {
+      this.onFulfilledCallbacks.push(() => {
+        onFulfilled(this.value)
+      })
+      this.onRejectedCallbacks.push(() => {
+        onRejected(this.reason)
+      })
+    } else if (this.state === this.FULFILLED) {
       onFulfilled(this.value)
     } else if (this.state === this.REJECTED) {
       onRejected(this.reason)
