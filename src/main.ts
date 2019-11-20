@@ -7,6 +7,8 @@ export default class MyPromise {
   private FULFILLED: string = 'FULFILLED'
   private REJECTED: string = 'REJECTED'
   private state: string
+  private value: any
+  private reason: any
 
   constructor (executor: PromiseExecutor) {
     this.state = this.PENDING
@@ -21,12 +23,22 @@ export default class MyPromise {
   resolve (value: any) {
     if (this.state === this.PENDING) {
       this.state = this.FULFILLED
+      this.value = value
     }
   }
 
   reject (reason: any) {
     if (this.state === this.PENDING) {
       this.state = this.REJECTED
+      this.reason = reason
+    }
+  }
+
+  then (onFulfilled: Function, onRejected: Function) {
+    if (this.state === this.FULFILLED) {
+      onFulfilled(this.value)
+    } else if (this.state === this.REJECTED) {
+      onRejected(this.reason)
     }
   }
 
