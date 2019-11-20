@@ -9,48 +9,56 @@ export default class MyPromise {
   private state: string
   private value: any
   private reason: any
-  private onFulfilledCallbacks: Array<{():any}> = []
-  private onRejectedCallbacks: Array<{():any}> = []
+  private handleValueList: Array<{():any}> = []
+  private handleReasonList: Array<{():any}> = []
+
 
   constructor (executor: PromiseExecutor) {
     this.state = this.PENDING
     this.executor = executor
     try {
+      // 立即执行函数调用, 并传入resolve和reject
       this.executor(this.resolve, this.reject)
     } catch (error) {
       this.reject(error)
     }
   }
 
+  // 接收在立即执行函数里传入的值
   resolve (value: any) {
     if (this.state === this.PENDING) {
       this.state = this.FULFILLED
       this.value = value
-      this.onFulfilledCallbacks.forEach(onFulfilledCallback => onFulfilledCallback())
+      // 执行then里暂存的handleValue
+      this.handleValueList.forEach(handleValue => handleValue())
     }
   }
 
+  // 接收在立即执行函数里传入的值
   reject (reason: any) {
     if (this.state === this.PENDING) {
       this.state = this.REJECTED
       this.reason = reason
-      this.onRejectedCallbacks.forEach(onRejectedCallback => onRejectedCallback())
+      // 执行then里暂存的handleReson
+      this.handleReasonList.forEach(handleReason => handleReason())
     }
   }
 
-  then (onFulfilled: Function, onRejected: Function) {
-
+  then (handleValue: Function, handleReason: Function) {
+    // 待定状态, 暂存handleValue和handleReason
     if (this.state === this.PENDING) {
-      this.onFulfilledCallbacks.push(() => {
-        onFulfilled(this.value)
+      this.handleValueList.push(() => {
+        handleValue(this.value)
       })
-      this.onRejectedCallbacks.push(() => {
-        onRejected(this.reason)
+      this.handleReasonList.push(() => {
+        handleReason(this.reason)
       })
+      // 履行状态, 执行handleValue, 传入resovle接收的值
     } else if (this.state === this.FULFILLED) {
-      onFulfilled(this.value)
+      handleValue(this.value)
+      // 拒绝状态, 执行handleReason, 传入reject接收的值
     } else if (this.state === this.REJECTED) {
-      onRejected(this.reason)
+      handleReason(this.reason)
     }
   }
 
